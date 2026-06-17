@@ -1,8 +1,8 @@
-"""Custom errors used by the MiniLang compiler stages."""
+"""Erros personalizados usados pelas etapas do compilador MiniLang."""
 
 
 class MiniLangError(Exception):
-    """Base class for all MiniLang errors."""
+    """Classe base para todos os erros da MiniLang."""
 
     label = "Erro"
 
