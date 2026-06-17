@@ -1,11 +1,22 @@
-"""Syntax analysis and AST construction for MiniLang."""
+"""Analise sintatica e construcao da AST da MiniLang."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 
 from .errors import SyntaxErrorMiniLang
 from .tokens import Token, TokenType
+
+
+class Operator(Enum):
+    ADD = "+"
+    SUB = "-"
+    MUL = "*"
+    DIV = "/"
+    LT = "<"
+    GT = ">"
+    EQ = "=="
 
 
 @dataclass(frozen=True)
@@ -21,12 +32,17 @@ class Variable:
 
 
 @dataclass(frozen=True)
-class BinaryAdd:
+class BinaryOperation:
     left: "Expression"
+    operator: Operator
     right: "Expression"
 
 
-Expression = Number | Variable | BinaryAdd
+# Alias mantido para compatibilidade com os testes/codigo antigo.
+BinaryAdd = BinaryOperation
+
+
+Expression = Number | Variable | BinaryOperation
 
 
 @dataclass(frozen=True)
@@ -39,12 +55,20 @@ class Assignment:
 
 @dataclass(frozen=True)
 class Print:
-    name: str
+    expression: Expression
     line: int
     column: int
 
 
-Statement = Assignment | Print
+@dataclass(frozen=True)
+class While:
+    condition: Expression
+    body: list["Statement"]
+    line: int
+    column: int
+
+
+Statement = Assignment | Print | While
 
 
 @dataclass(frozen=True)
@@ -58,24 +82,35 @@ class Parser:
         self.position = 0
 
     def parse(self) -> Program:
+        # Um programa completo e um bloco que termina somente no EOF.
+        statements = self._block_until(TokenType.EOF)
+        self._consume(TokenType.EOF, "esperado fim do arquivo")
+        return Program(statements)
+
+    def _block_until(self, end_token: TokenType) -> list[Statement]:
+        # A mesma funcao serve para o programa inteiro e para o corpo do while.
         statements: list[Statement] = []
         self._skip_newlines()
 
-        while not self._check(TokenType.EOF):
+        while not self._check(end_token) and not self._check(TokenType.EOF):
             statements.append(self._statement())
-            self._consume_statement_end()
             self._skip_newlines()
 
-        return Program(statements)
+        return statements
 
     def _statement(self) -> Statement:
         if self._check(TokenType.PRINT):
-            return self._print()
-        if self._check(TokenType.ID):
-            return self._assignment()
+            statement = self._print()
+        elif self._check(TokenType.WHILE):
+            statement = self._while()
+        elif self._check(TokenType.ID):
+            statement = self._assignment()
+        else:
+            token = self._current()
+            raise SyntaxErrorMiniLang("esperado atribuicao, print() ou while", token.line, token.column)
 
-        token = self._current()
-        raise SyntaxErrorMiniLang("esperado atribuicao ou print()", token.line, token.column)
+        self._consume_statement_end()
+        return statement
 
     def _assignment(self) -> Assignment:
         name = self._consume(TokenType.ID, "esperado nome da variavel")
@@ -86,32 +121,77 @@ class Parser:
     def _print(self) -> Print:
         start = self._consume(TokenType.PRINT, "esperado comando print")
         self._consume(TokenType.LPAREN, "esperado '(' apos print")
-        name = self._consume(TokenType.ID, "esperado variavel dentro de print()")
-        self._consume(TokenType.RPAREN, "esperado ')' apos variavel do print")
-        return Print(name.value, start.line, start.column)
+        expression = self._expression()
+        self._consume(TokenType.RPAREN, "esperado ')' apos expressao do print")
+        return Print(expression, start.line, start.column)
+
+    def _while(self) -> While:
+        start = self._consume(TokenType.WHILE, "esperado comando while")
+        condition = self._comparison()
+        self._consume_statement_end()
+
+        body = self._block_until(TokenType.END)
+        self._consume(TokenType.END, "esperado 'end' para fechar o while")
+        return While(condition, body, start.line, start.column)
+
+    def _comparison(self) -> Expression:
+        expression = self._expression()
+
+        if self._match(TokenType.LT):
+            return BinaryOperation(expression, Operator.LT, self._expression())
+        if self._match(TokenType.GT):
+            return BinaryOperation(expression, Operator.GT, self._expression())
+        if self._match(TokenType.EQ):
+            return BinaryOperation(expression, Operator.EQ, self._expression())
+
+        token = self._current()
+        raise SyntaxErrorMiniLang("esperado comparador '<', '>' ou '==' no while", token.line, token.column)
 
     def _expression(self) -> Expression:
         expression = self._term()
 
-        if self._match(TokenType.PLUS):
-            right = self._term()
-            expression = BinaryAdd(expression, right)
+        # Soma e subtracao tem precedencia menor que multiplicacao e divisao.
+        while self._check(TokenType.PLUS) or self._check(TokenType.MINUS):
+            if self._match(TokenType.PLUS):
+                operator = Operator.ADD
+            else:
+                self._consume(TokenType.MINUS, "esperado '-'")
+                operator = Operator.SUB
+            expression = BinaryOperation(expression, operator, self._term())
 
         return expression
 
     def _term(self) -> Expression:
+        expression = self._factor()
+
+        # Multiplicacao e divisao sao agrupadas antes de soma e subtracao.
+        while self._check(TokenType.STAR) or self._check(TokenType.SLASH):
+            if self._match(TokenType.STAR):
+                operator = Operator.MUL
+            else:
+                self._consume(TokenType.SLASH, "esperado '/'")
+                operator = Operator.DIV
+            expression = BinaryOperation(expression, operator, self._factor())
+
+        return expression
+
+    def _factor(self) -> Expression:
         if self._check(TokenType.NUM):
             token = self._advance()
             return Number(int(token.value))
         if self._check(TokenType.ID):
             token = self._advance()
             return Variable(token.value, token.line, token.column)
+        if self._match(TokenType.LPAREN):
+            expression = self._expression()
+            self._consume(TokenType.RPAREN, "esperado ')' apos expressao")
+            return expression
 
         token = self._current()
-        raise SyntaxErrorMiniLang("esperado numero ou variavel", token.line, token.column)
+        raise SyntaxErrorMiniLang("esperado numero, variavel ou '('", token.line, token.column)
 
     def _consume_statement_end(self) -> None:
-        if self._check(TokenType.NEWLINE) or self._check(TokenType.EOF):
+        if self._check(TokenType.NEWLINE) or self._check(TokenType.EOF) or self._check(TokenType.END):
             return
 
         token = self._current()
@@ -148,6 +228,6 @@ class Parser:
 
 
 def parser(tokens: list[Token]) -> Program:
-    """Validate token order and return the MiniLang AST."""
+    """Valida a ordem dos tokens e retorna a AST da MiniLang."""
 
     return Parser(tokens).parse()
