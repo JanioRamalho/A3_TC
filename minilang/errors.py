@@ -22,16 +22,16 @@ class MiniLangError(Exception):
 
 
 class LexicalError(MiniLangError):
-    label = "Erro lexico"
+    label = "Erro léxico"
 
 
 class SyntaxErrorMiniLang(MiniLangError):
-    label = "Erro sintatico"
+    label = "Erro sintático"
 
 
 class SemanticError(MiniLangError):
-    label = "Erro semantico"
+    label = "Erro semântico"
 
 
 class ExecutionError(MiniLangError):
-    label = "Erro de execucao"
+    label = "Erro de execução"
