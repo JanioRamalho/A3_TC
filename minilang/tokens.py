@@ -1,4 +1,4 @@
-"""Token definitions for MiniLang."""
+"""Definicoes de tokens da MiniLang."""
 
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -9,7 +9,15 @@ class TokenType(Enum):
     NUM = auto()
     ASSIGN = auto()
     PLUS = auto()
+    MINUS = auto()
+    STAR = auto()
+    SLASH = auto()
+    LT = auto()
+    GT = auto()
+    EQ = auto()
     PRINT = auto()
+    WHILE = auto()
+    END = auto()
     LPAREN = auto()
     RPAREN = auto()
     NEWLINE = auto()
