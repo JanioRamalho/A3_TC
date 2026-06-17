@@ -1,4 +1,4 @@
-"""Lexical analysis for MiniLang."""
+"""Analise lexica da MiniLang."""
 
 from __future__ import annotations
 
@@ -11,8 +11,14 @@ from .tokens import Token, TokenType
 TOKEN_REGEX = re.compile(
     r"(?P<NUM>\d+)"
     r"|(?P<ID>[A-Za-z_][A-Za-z0-9_]*)"
+    r"|(?P<EQ>==)"
     r"|(?P<ASSIGN>=)"
     r"|(?P<PLUS>\+)"
+    r"|(?P<MINUS>-)"
+    r"|(?P<STAR>\*)"
+    r"|(?P<SLASH>/)"
+    r"|(?P<LT><)"
+    r"|(?P<GT>>)"
     r"|(?P<LPAREN>\()"
     r"|(?P<RPAREN>\))"
     r"|(?P<SKIP>[ \t]+)"
@@ -21,10 +27,11 @@ TOKEN_REGEX = re.compile(
 
 
 def lexer(codigo: str) -> list[Token]:
-    """Transform source code into a list of tokens.
+    """Transforma codigo-fonte em uma lista de tokens.
 
-    The scanner consumes the input from left to right, like a small AFD:
-    each recognized regular expression moves the analysis to a token state.
+    O analisador consome a entrada da esquerda para a direita, como um
+    pequeno AFD: cada expressao regular reconhecida move a analise para
+    um estado de token.
     """
 
     tokens: list[Token] = []
@@ -40,7 +47,12 @@ def lexer(codigo: str) -> list[Token]:
             if kind == "MISMATCH":
                 raise LexicalError(f"caractere invalido '{value}'", line_number, column)
 
-            token_type = TokenType.PRINT if kind == "ID" and value == "print" else TokenType[kind]
+            keywords = {
+                "print": TokenType.PRINT,
+                "while": TokenType.WHILE,
+                "end": TokenType.END,
+            }
+            token_type = keywords.get(value, TokenType[kind]) if kind == "ID" else TokenType[kind]
             tokens.append(Token(token_type, value, line_number, column))
 
         tokens.append(Token(TokenType.NEWLINE, "\\n", line_number, len(line) + 1))

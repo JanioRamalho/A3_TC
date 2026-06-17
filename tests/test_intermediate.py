@@ -7,7 +7,7 @@ from minilang.parser import parser
 
 class IntermediateTest(unittest.TestCase):
     def test_generates_pseudo_assembly(self):
-        ast = parser(lexer("x = 10\ny = x + 5\nprint(y)"))
+        ast = parser(lexer("x = 10\ny = (x + 5) * 2\nprint(y - x)"))
 
         self.assertEqual(
             gerar_codigo(ast),
@@ -15,9 +15,18 @@ class IntermediateTest(unittest.TestCase):
                 "LOAD 10",
                 "STORE x",
                 "LOAD x",
-                "ADD 5",
+                "PUSH",
+                "LOAD 5",
+                "ADD_STACK",
+                "PUSH",
+                "LOAD 2",
+                "MUL_STACK",
                 "STORE y",
-                "PRINT y",
+                "LOAD y",
+                "PUSH",
+                "LOAD x",
+                "SUB_STACK",
+                "PRINT_ACC",
             ],
         )
 

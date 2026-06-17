@@ -1,4 +1,4 @@
-"""Integration of all MiniLang compiler stages."""
+"""Integracao de todas as etapas do compilador MiniLang."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ class CompilerResult:
 
 
 def compilar(codigo: str) -> CompilerResult:
-    """Run lexical, syntax, semantic, intermediate and execution stages."""
+    """Executa as etapas lexica, sintatica, semantica, intermediaria e de execucao."""
 
     tokens = lexer(codigo)
     ast = parser(tokens)

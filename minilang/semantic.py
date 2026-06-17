@@ -1,29 +1,30 @@
-"""Semantic analysis for MiniLang."""
+"""Analise semantica da MiniLang."""
 
 from __future__ import annotations
 
 from .errors import SemanticError
-from .parser import Assignment, BinaryAdd, Expression, Number, Print, Program, Variable
+from .parser import Assignment, BinaryOperation, Expression, Number, Print, Program, Variable, While
 
 
 def semantico(program: Program) -> set[str]:
-    """Validate variable usage and return the set of defined variables."""
+    """Valida o uso de variaveis e retorna o conjunto de variaveis definidas."""
 
     defined: set[str] = set()
+    _check_statements(program.statements, defined)
+    return defined
 
-    for statement in program.statements:
+
+def _check_statements(statements: list[Assignment | Print | While], defined: set[str]) -> None:
+    for statement in statements:
         if isinstance(statement, Assignment):
             _check_expression(statement.expression, defined)
             defined.add(statement.name)
         elif isinstance(statement, Print):
-            if statement.name not in defined:
-                raise SemanticError(
-                    f"variavel '{statement.name}' usada antes de ser definida",
-                    statement.line,
-                    statement.column,
-                )
-
-    return defined
+            _check_expression(statement.expression, defined)
+        elif isinstance(statement, While):
+            _check_expression(statement.condition, defined)
+            body_defined = set(defined)
+            _check_statements(statement.body, body_defined)
 
 
 def _check_expression(expression: Expression, defined: set[str]) -> None:
@@ -37,7 +38,7 @@ def _check_expression(expression: Expression, defined: set[str]) -> None:
                 expression.column,
             )
         return
-    if isinstance(expression, BinaryAdd):
+    if isinstance(expression, BinaryOperation):
         _check_expression(expression.left, defined)
         _check_expression(expression.right, defined)
         return

@@ -1,102 +1,55 @@
 # Compilador Educacional MiniLang
 
-Projeto desenvolvido para a A3 de Teoria da Computacao / Compiladores e Linguagens Formais.
+Projeto da A3 de **Teoria da Computação** e **Compiladores e Linguagens Formais**.
 
-O objetivo e implementar um compilador educacional simplificado em Python para uma linguagem chamada **MiniLang**. O projeto mostra, na pratica, as principais etapas de um compilador:
+O objetivo é mostrar, de forma simples, como um compilador funciona: ele lê um código, analisa, valida, traduz para código intermediário e executa.
 
-- Analise lexica
-- Analise sintatica
-- Analise semantica
-- Geracao de codigo intermediario
-- Execucao do codigo
-- Integracao das etapas
-- Interface em terminal
-- Relatorio relacionando o projeto com Teoria da Computacao
+## O que o projeto faz
 
-## O que e a MiniLang?
-
-A MiniLang e uma linguagem simples criada para demonstrar como um compilador funciona.
+O projeto implementa uma linguagem simples chamada **MiniLang**.
 
 Ela permite:
 
-- Criar variaveis
-- Atribuir numeros inteiros
-- Somar valores com o operador `+`
-- Imprimir valores com `print()`
+- variáveis;
+- números inteiros;
+- operações `+`, `-`, `*` e `/`;
+- parênteses em expressões;
+- `print(expressao)`;
+- laço `while`;
+- comparadores `<`, `>` e `==`.
 
-Exemplo valido:
-
-```text
-x = 10
-y = x + 5
-print(y)
-```
-
-Resultado esperado:
+Exemplo:
 
 ```text
-15
+x = 0
+y = (10 + 5) * 2
+while x < 3
+x = x + 1
+end
+print(y - x)
 ```
 
-## Sintaxe da Linguagem
-
-A linguagem segue estas regras:
-
-- Uma instrucao por linha
-- Variaveis podem ter nomes como `x`, `y`, `total`, `idade`
-- Numeros devem ser inteiros
-- O operador disponivel e `+`
-- O comando de saida e `print(variavel)`
-
-Exemplos validos:
+Saída esperada:
 
 ```text
-x = 10
-print(x)
+27
 ```
+
+Memória final:
 
 ```text
-x = 10
-y = x + 5
-print(y)
+{'x': 3, 'y': 30}
 ```
 
-```text
-idade = 18
-proxima_idade = idade + 1
-print(proxima_idade)
-```
+## Como executar
 
-Exemplos invalidos:
+Na raiz do projeto:
 
-```text
-x 10 = + 5
-```
-
-Motivo: a ordem dos tokens esta incorreta.
-
-```text
-y = x + 5
-print(y)
-```
-
-Motivo: a variavel `x` foi usada antes de ser definida.
-
-```text
-x = 10 @ 5
-```
-
-Motivo: o caractere `@` nao pertence a linguagem.
-
-## Como Executar
-
-Na pasta do projeto, execute:
-
-```bash
+```powershell
 python main.py
 ```
 
-O sistema abrira um menu:
+O menu possui:
 
 ```text
 1. Digitar codigo MiniLang
@@ -104,70 +57,13 @@ O sistema abrira um menu:
 3. Executar exemplo com erro lexico
 4. Executar exemplo com erro sintatico
 5. Executar exemplo com erro semantico
+6. Explicar etapas da compilacao
 0. Sair
 ```
 
-Para escrever seu proprio codigo, escolha a opcao `1`.
+## Etapas do compilador
 
-Exemplo de entrada:
-
-```text
-> x = 10
-> y = x + 5
-> print(y)
->
-```
-
-A linha vazia finaliza a digitacao e inicia a compilacao.
-
-## Como Rodar os Testes
-
-O projeto usa `unittest`, biblioteca padrao do Python.
-
-Execute:
-
-```bash
-python -m unittest discover -s tests
-```
-
-Os testes cobrem:
-
-- Codigo valido com atribuicao
-- Codigo valido com soma
-- Codigo valido com `print`
-- Erro lexico
-- Erro sintatico
-- Erro semantico
-- Geracao de codigo intermediario
-- Execucao final
-
-## Estrutura do Projeto
-
-```text
-A3_Teoria da Computacao/
-├── main.py
-├── minilang/
-│   ├── tokens.py
-│   ├── lexer.py
-│   ├── parser.py
-│   ├── semantic.py
-│   ├── intermediate.py
-│   ├── executor.py
-│   ├── compiler.py
-│   └── errors.py
-├── examples/
-│   ├── valido.min
-│   ├── erro_lexico.min
-│   ├── erro_sintatico.min
-│   └── erro_semantico.min
-├── tests/
-└── docs/
-    └── relatorio.md
-```
-
-## Como o Compilador Funciona
-
-O fluxo completo fica em `minilang/compiler.py`.
+O fluxo principal está em `minilang/compiler.py`:
 
 ```python
 tokens = lexer(codigo)
@@ -177,229 +73,378 @@ codigo_intermediario = gerar_codigo(ast)
 resultado = executar(codigo_intermediario)
 ```
 
-### 1. Analise Lexica
+Cada etapa fica em um arquivo:
 
-Arquivo: `minilang/lexer.py`
+| Etapa | Arquivo | Função |
+|---|---|---|
+| Tokens | `tokens.py` | Define os tipos de tokens |
+| Léxico | `lexer.py` | Transforma código em tokens |
+| Sintático | `parser.py` | Valida a gramática e gera a AST |
+| Semântico | `semantic.py` | Verifica uso correto de variáveis |
+| Intermediário | `intermediate.py` | Gera pseudo-assembly |
+| Execução | `executor.py` | Executa o pseudo-assembly |
+| Integração | `compiler.py` | Junta todas as etapas |
+| Interface | `main.py` | Menu do terminal |
 
-Essa etapa transforma o codigo fonte em tokens.
+## Fluxo e arquitetura do projeto
 
-Entrada:
+O projeto funciona como uma linha de processamento. O código entra pela interface do terminal, passa pelas etapas do compilador e, no final, é executado pelo interpretador da MiniLang.
+
+```text
+┌────────────────────────────┐
+│ Usuário                    │
+│ Digita ou escolhe exemplo  │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ main.py                    │
+│ Interface do terminal      │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/compiler.py       │
+│ Coordena todas as etapas   │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/lexer.py          │
+│ Código-fonte -> tokens     │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/parser.py         │
+│ Tokens -> AST              │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/semantic.py       │
+│ Verifica regras de sentido │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/intermediate.py   │
+│ AST -> pseudo-assembly     │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/executor.py       │
+│ Executa as instruções      │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ Resultado final            │
+│ Saída e memória            │
+└────────────────────────────┘
+```
+
+De forma resumida:
+
+```text
+Código MiniLang
+    -> tokens
+    -> AST
+    -> análise semântica
+    -> código intermediário
+    -> execução
+    -> resultado
+```
+
+## Conceitos usados no projeto
+
+O projeto aplica os principais conceitos de Teoria da Computação em partes diferentes do compilador.
+
+### Expressões regulares e AFD
+
+Arquivo:
+
+```text
+minilang/lexer.py
+```
+
+O lexer usa a variável `TOKEN_REGEX` para reconhecer padrões da linguagem, como variáveis, números, operadores e palavras reservadas.
+
+Essa etapa pode ser relacionada a um **Autômato Finito Determinístico**, pois o código é lido da esquerda para a direita e cada padrão reconhecido gera um token.
+
+### Tokens
+
+Arquivo:
+
+```text
+minilang/tokens.py
+```
+
+Define os tipos de tokens usados pela linguagem, como:
+
+```text
+ID, NUM, PLUS, PRINT, WHILE, END, EOF
+```
+
+Esses tokens são a entrada da próxima etapa, o parser.
+
+### Gramática Livre de Contexto e Autômato de Pilha
+
+Arquivo:
+
+```text
+minilang/parser.py
+```
+
+O parser verifica se os tokens seguem a estrutura correta da MiniLang.
+
+Ele valida, por exemplo:
 
 ```text
 x = 10
+print(x + 5)
+while x < 3
+...
+end
 ```
 
-Saida:
+Essa etapa representa uma **Gramática Livre de Contexto**. O conceito de **Autômato de Pilha** aparece no controle de estruturas aninhadas, como parênteses e blocos `while/end`.
+
+### AST
+
+Arquivo:
 
 ```text
-ID(x), ASSIGN, NUM(10)
+minilang/parser.py
 ```
 
-Aqui entram as **expressoes regulares**. O usuario nao precisa escrever uma expressao regular na MiniLang. As expressoes regulares sao usadas internamente pelo compilador para reconhecer numeros, variaveis, operadores e parenteses.
+Além de validar a estrutura, o parser monta uma **AST**.
 
-Exemplos de padroes reconhecidos:
+AST significa **Árvore Sintática Abstrata**. Ela representa a organização lógica do código antes da geração do código intermediário.
 
-- Numeros: `10`, `25`, `100`
-- Variaveis: `x`, `y`, `total`, `idade`
-- Operador: `+`
-- Atribuicao: `=`
-- Comando: `print`
+### Linguagem Sensível ao Contexto
 
-Relacao com Teoria da Computacao:
+Arquivo:
 
-- Expressoes Regulares
-- Automato Finito Deterministico, AFD
+```text
+minilang/semantic.py
+```
 
-### 2. Analise Sintatica
+A análise semântica verifica regras que dependem do contexto.
 
-Arquivo: `minilang/parser.py`
+Exemplo:
 
-Essa etapa verifica se os tokens estao em uma ordem valida.
+```text
+y = x + 5
+```
 
-Exemplo valido:
+Esse código é estruturalmente válido, mas está semanticamente errado se `x` ainda não foi definido.
+
+### Código intermediário
+
+Arquivo:
+
+```text
+minilang/intermediate.py
+```
+
+Transforma a AST em pseudo-assembly.
+
+Exemplo:
+
+```text
+LOAD 10
+STORE x
+```
+
+Essa etapa mostra a tradução da linguagem MiniLang para instruções mais simples.
+
+### Máquina de Turing
+
+Arquivo:
+
+```text
+minilang/executor.py
+```
+
+O executor processa o pseudo-assembly passo a passo.
+
+Ele usa:
+
+- memória;
+- pilha;
+- acumulador;
+- rótulos;
+- saltos.
+
+Essa execução sequencial representa, de forma simplificada, a ideia de uma **Máquina de Turing**.
+
+### Integração das etapas
+
+Arquivo:
+
+```text
+minilang/compiler.py
+```
+
+Esse arquivo junta todas as etapas:
+
+```text
+lexer -> parser -> semântico -> código intermediário -> execução
+```
+
+## Como cada etapa funciona
+
+### 1. Análise léxica
+
+Arquivo:
+
+```text
+minilang/lexer.py
+```
+
+Recebe o código como texto e transforma em tokens.
+
+Exemplo:
 
 ```text
 x = 10 + 5
 ```
 
-Exemplo invalido:
+Vira algo como:
 
 ```text
-x 10 = + 5
+ID(x), ASSIGN, NUM(10), PLUS, NUM(5)
 ```
 
-Gramatica usada:
+Essa etapa demonstra **expressões regulares** e **Autômato Finito Determinístico**.
+
+### 2. Análise sintática
+
+Arquivo:
 
 ```text
-programa   -> instrucao*
-instrucao  -> atribuicao | impressao
-atribuicao -> ID "=" expressao
-impressao  -> "print" "(" ID ")"
-expressao  -> termo ("+" termo)?
-termo      -> ID | NUM
+minilang/parser.py
 ```
 
-Relacao com Teoria da Computacao:
+Verifica se os tokens estão na ordem correta e monta a AST.
 
-- Gramatica Livre de Contexto
-- Automato de Pilha, PDA
+Exemplo válido:
 
-### 3. Analise Semantica
+```text
+print(x + y)
+```
 
-Arquivo: `minilang/semantic.py`
+Exemplo inválido:
 
-Essa etapa verifica se o codigo faz sentido.
+```text
+x = (10 + 5
+```
 
-Principal regra:
+Essa etapa demonstra **Gramática Livre de Contexto** e, conceitualmente, **Autômato de Pilha**.
 
-- Uma variavel so pode ser usada depois de ser definida.
+### 3. Análise semântica
 
-Exemplo invalido:
+Arquivo:
+
+```text
+minilang/semantic.py
+```
+
+Verifica se o código faz sentido.
+
+Exemplo inválido:
 
 ```text
 y = x + 5
 ```
 
-Nesse caso, `x` nao foi definido antes.
+Nesse caso, `x` foi usado antes de ser definido.
 
-Relacao com Teoria da Computacao:
+Essa etapa demonstra uma regra dependente de contexto.
 
-- Linguagem Sensivel ao Contexto, CSL
+### 4. Código intermediário
 
-### 4. Codigo Intermediario
-
-Arquivo: `minilang/intermediate.py`
-
-Essa etapa transforma a AST em pseudo-assembly.
-
-Entrada:
+Arquivo:
 
 ```text
-x = 10
-y = x + 5
-print(y)
+minilang/intermediate.py
 ```
 
-Codigo intermediario:
+Traduz a AST para pseudo-assembly.
+
+Exemplo:
+
+```text
+y = (10 + 5) * 2
+```
+
+Pode gerar:
 
 ```text
 LOAD 10
-STORE x
-LOAD x
-ADD 5
+PUSH
+LOAD 5
+ADD_STACK
+PUSH
+LOAD 2
+MUL_STACK
 STORE y
-PRINT y
 ```
 
-Essa etapa ajuda a mostrar que o compilador traduziu a linguagem MiniLang para uma representacao mais proxima de maquina.
+### 5. Execução
 
-### 5. Execucao
-
-Arquivo: `minilang/executor.py`
-
-Essa etapa executa o pseudo-assembly.
-
-Ela usa:
-
-- Um acumulador
-- Uma memoria de variaveis
-- Uma lista de saidas
-
-Exemplo de memoria final:
+Arquivo:
 
 ```text
-{'x': 10, 'y': 15}
+minilang/executor.py
 ```
 
-Relacao com Teoria da Computacao:
+Executa o pseudo-assembly usando:
 
-- Maquina de Turing
-- Processamento sequencial
-- Memoria e mudanca de estado
+- memória;
+- pilha;
+- acumulador;
+- rótulos;
+- saltos.
 
-## O Projeto Cumpre o Documento da A3?
+Essa etapa representa a ideia de **processamento sequencial**, associada à **Máquina de Turing**.
 
-Sim. O projeto cumpre os requisitos obrigatorios principais do documento.
+## Exemplos disponíveis
 
-| Requisito do documento | Onde foi implementado |
-| --- | --- |
-| Ler codigo de entrada | `main.py` |
-| Analise lexica | `minilang/lexer.py` |
-| Analise sintatica | `minilang/parser.py` |
-| Analise semantica | `minilang/semantic.py` |
-| Gerar codigo intermediario | `minilang/intermediate.py` |
-| Executar o codigo | `minilang/executor.py` |
-| Fluxo completo do compilador | `minilang/compiler.py` |
-| Interface em terminal | `main.py` |
-| Exibir tokens, erros e resultado | `main.py` |
-| Relatorio obrigatorio | `docs/relatorio.md` |
-| Exemplos validos e invalidos | `examples/` |
-| Testes das etapas | `tests/` |
-
-Tambem foram contemplados os conceitos teoricos pedidos:
-
-| Conceito | Aplicacao no projeto |
-| --- | --- |
-| AFD | Reconhecimento de tokens no lexer |
-| Expressoes Regulares | Padroes usados no lexer |
-| Gramatica Livre de Contexto | Regras da linguagem no parser |
-| PDA | Validacao estrutural da sintaxe |
-| CSL | Verificacao de variaveis conforme contexto |
-| Maquina de Turing | Execucao sequencial com memoria |
-
-## Limitacoes Atuais
-
-Esta versao foi feita para cumprir o escopo obrigatorio da A3. Por isso, a linguagem ainda e simples.
-
-Limitacoes:
-
-- Suporta apenas o operador `+`
-- Nao possui `if`, `while` ou funcoes
-- Nao possui numeros negativos digitados diretamente
-- Nao possui comentarios no codigo MiniLang
-- A expressao suporta uma soma simples, como `x + 5`
-
-Essas limitacoes nao impedem a entrega, porque o documento pede uma linguagem educacional simplificada com variaveis, inteiros, operador `+` e `print()`.
-
-## Exemplo Completo para Apresentacao
-
-Codigo MiniLang:
+Os exemplos ficam na pasta `examples/`:
 
 ```text
-x = 10
-y = x + 5
-print(y)
+valido.min
+erro_lexico.min
+erro_sintatico.min
+erro_semantico.min
 ```
 
-Tokens:
+Eles demonstram:
 
-```text
-ID(x), ASSIGN, NUM(10), ID(y), ASSIGN, ID(x), PLUS, NUM(5), PRINT, LPAREN, ID(y), RPAREN
+- execução correta;
+- erro léxico;
+- erro sintático;
+- erro semântico.
+
+## Testes
+
+Os testes ficam na pasta `tests/`.
+
+Para executar:
+
+```powershell
+python -m unittest discover -s tests
 ```
 
-Codigo intermediario:
+## Resposta obrigatória
 
-```text
-LOAD 10
-STORE x
-LOAD x
-ADD 5
-STORE y
-PRINT y
-```
+**Como a Teoria da Computação foi aplicada no projeto?**
 
-Resultado:
+A Teoria da Computação foi aplicada em todas as etapas do compilador MiniLang. A análise léxica usa expressões regulares e pode ser relacionada a Autômatos Finitos Determinísticos. A análise sintática usa uma gramática para validar a estrutura do código, relacionando-se com Gramáticas Livres de Contexto e Autômatos de Pilha. A análise semântica verifica regras dependentes de contexto, como impedir o uso de variáveis antes de sua definição. Depois, o código é traduzido para pseudo-assembly e executado passo a passo com memória, pilha, acumulador e saltos, representando a ideia de Máquina de Turing.
 
-```text
-15
-```
+## Conclusão
 
-Memoria final:
-
-```text
-{'x': 10, 'y': 15}
-```
-
-## Resposta Curta para a Apresentacao
-
-O projeto aplica Teoria da Computacao porque cada etapa do compilador representa um conceito estudado. A analise lexica usa expressoes regulares e pode ser representada por um AFD. A analise sintatica usa uma gramatica livre de contexto e se relaciona com automatos de pilha. A analise semantica depende do contexto, pois verifica se variaveis ja foram declaradas. Por fim, a execucao processa instrucoes sequencialmente, alterando memoria, o que se relaciona com a ideia de Maquina de Turing.
+O projeto cumpre o objetivo de demonstrar um compilador educacional completo, com análise léxica, sintática, semântica, geração de código intermediário, execução e relação direta com os conceitos de Teoria da Computação.

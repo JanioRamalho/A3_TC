@@ -1,4 +1,4 @@
-"""MiniLang educational compiler package."""
+"""Pacote do compilador educacional MiniLang."""
 
 from .compiler import CompilerResult, compilar
 
