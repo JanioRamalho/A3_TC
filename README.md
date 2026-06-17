@@ -86,6 +86,77 @@ Cada etapa fica em um arquivo:
 | Integração | `compiler.py` | Junta todas as etapas |
 | Interface | `main.py` | Menu do terminal |
 
+## Fluxo e arquitetura do projeto
+
+O projeto funciona como uma linha de processamento. O código entra pela interface do terminal, passa pelas etapas do compilador e, no final, é executado pelo interpretador da MiniLang.
+
+```text
+┌────────────────────────────┐
+│ Usuário                    │
+│ Digita ou escolhe exemplo  │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ main.py                    │
+│ Interface do terminal      │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/compiler.py       │
+│ Coordena todas as etapas   │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/lexer.py          │
+│ Código-fonte -> tokens     │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/parser.py         │
+│ Tokens -> AST              │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/semantic.py       │
+│ Verifica regras de sentido │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/intermediate.py   │
+│ AST -> pseudo-assembly     │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ minilang/executor.py       │
+│ Executa as instruções      │
+└──────────────┬─────────────┘
+               │
+               v
+┌────────────────────────────┐
+│ Resultado final            │
+│ Saída e memória            │
+└────────────────────────────┘
+```
+
+De forma resumida:
+
+```text
+Código MiniLang
+    -> tokens
+    -> AST
+    -> análise semântica
+    -> código intermediário
+    -> execução
+    -> resultado
+```
+
 ## Conceitos usados no projeto
 
 O projeto aplica os principais conceitos de Teoria da Computação em partes diferentes do compilador.
